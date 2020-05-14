@@ -1,0 +1,143 @@
+#include<iostream>
+#include<vector>
+#include <iomanip>
+#define number 4//向量个数
+int Gausse = -1;//高斯运算次数
+int jacobi1 = -1;//雅可比运算次数
+int sorc = -1;//超松弛运算次数
+using namespace std;
+double best_x, w = 1.15;
+vector<double>::iterator it;
+void swap(vector<double>& X1, vector<double>& X2)//将第一次输入的值换成第一次运算后的结果
+{
+	int i = 0;
+	for (it = X2.begin(); it != X2.end(); it++)//将数组x2的值11赋给x1知道末尾x2.end()
+	{
+		X1[i] = *it;
+		i++;
+	}
+}
+void diso(double a[number][number])//遍历矩阵
+{
+	for (int i = 0; i < number; i++)
+	{
+		for (int j = 0; j < number; j++)
+		{
+			cout << a[i][j] << "\t";
+		}
+		cout << endl;
+	}
+}
+double maxvalue(vector<double>x1)
+{
+	double temp1, temp2;
+	if ((x1[0] - 1) > (x1[1] + 2))//矩阵的真实值为1和-2将所求的值存入v数组中做差判断
+	{
+		temp1 = abs(x1[0] - 1);//abs为取绝对值函数，取差值的绝对值
+	}
+	else
+	{
+		temp1 = abs(x1[1] + 2);
+	}
+	if ((x1[2] + 1) > (x1[3] - 3))
+	{
+		temp2 = abs(x1[2] + 1);
+	}
+	else
+	{
+		temp2 = abs(x1[3] - 3);
+	}
+	if (temp1 > temp2)
+	{
+		best_x = temp1;
+		return best_x;
+	}
+	else
+	{
+		best_x = temp2;
+		return best_x;//找出误差最大值
+	}
+}
+void Gauss(vector<double>x1, vector<double>x2)
+{
+	x2[0] = (double)1 / 5 * (double)(-x1[1] + x1[2] + 2 * x1[3] - 2);
+	x2[1] = (double)1 / 8 * (double)(-2 * x2[0] - x1[2] - 3 * x1[3] - 6);
+	x2[2] = (double)1 / 4 * (double)(x2[0] - 2 * x2[1] - x1[3] - 6);
+	x2[3] = (double)1 / 7 * (double)(x2[0] - 3 * x2[1] - 2 * x2[2] + 12);
+	swap(x1, x2);//运用交换函数将输出结果回代
+	Gausse++;
+	
+		cout << "高斯赛德尔迭代" << Gausse<< "次" << endl << "对应的解x1,x2,x3,x4为：" << endl;
+		int n = 1;
+		for (it = x2.begin(); it != x2.end(); it++)
+		{
+			cout << "x" << n << "=" << fixed << setprecision(9) << *it << endl;
+			n++;
+		}
+		puts(" ");
+		if (0.0001 > maxvalue(x2))
+		{
+		return;
+		}
+	Gauss(x1, x2);
+
+}
+void jacobi(vector<double>x1, vector<double>x2)
+{
+	x2[0] = (double)1 / 5 * (double)(-x1[1] + x1[2] + 2 * x1[3] - 2);
+	x2[1] = (double)1 / 8 * (double)(-2 * x1[0] - x1[2] - 3 * x1[3] - 6);
+	x2[2] = (double)1 / 4 * (double)(x1[0] - 2 * x1[1] - x1[3] - 6);
+	x2[3] = (double)1 / 7 * (double)(x1[0] - 3 * x1[1] - 2 * x1[2] + 12);
+	swap(x1, x2);//运用交换函数将输出结果回代
+	jacobi1++;
+	
+		cout << "雅可比迭代" << jacobi1 << "次" << endl << "对应的解x1,x2,x3,x4为：" << endl;
+		int n = 1;
+		for (it = x2.begin(); it != x2.end(); it++)
+		{
+			cout << "x" << n << "=" << fixed << setprecision(9) << *it << endl;
+			n++;
+		}
+		puts(" ");
+		if (0.0001 > maxvalue(x2))
+		{
+			return;
+		}
+	jacobi(x1, x2);
+}
+void sor(vector<double>z1,vector<double>z2)
+{
+	z2[0] = ((double)-0.15 * z1[0]) + ((double)1.15 / 5) * (double)(-2 - z1[1] + z1[2] + 2 * z1[3]);
+	z2[1] = ((double)-0.15 * z1[1]) + ((double)1.15 / 8) * (double)(-6 - 2 * z1[0] - z1[2] - 3 * z1[3]);
+	z2[2] = ((double)-0.15 * z1[2]) + ((double)1.15 / -4) * (double)(6 - z1[0] + 2 * z1[1] + z1[3]);
+	z2[3] = ((double)-0.15 * z1[3]) + ((double)1.15 / 7) * (double)(12 + z1[0] - 3 * z1[1] - 2 * z1[2]);
+	sorc++;
+	swap(z1, z2);
+	
+		int n=1;
+		cout << "SOR迭代" << sorc << "次" << endl ;
+		for (it = z2.begin(); it != z2.end(); it++)
+		{
+			cout <<"x"<<n<<"="<< fixed << setprecision(9) << *it << endl;
+			n++;
+		}
+		puts(" ");
+		if (0.0001 > maxvalue(z2))
+		{	
+			return;
+		}
+	sor(z1,z2);
+}
+void main()
+{
+	double a[number][number] = { {5,1,-1,2},{2,8,1,3},{1,-2,-4,-1},{-1,3,2,7} };
+	vector<double>X1(4, 0), X2(4, 0), Y1(4, 0), Y2(4, 0), z1(4, 0),z2(4,0);//定义x1，x2,y,z4个元素数组4个值全为0
+	cout << "给定x矩阵如下" << endl;
+	diso(a);
+	cout << "使用高斯迭代法：" << endl;
+	Gauss(Y1, Y2);
+	cout << "使用雅可比迭代法：" << endl;
+	jacobi(X1, X2);
+	cout << "使用sor迭代法：" << endl;
+	sor(z1, z2);
+}
